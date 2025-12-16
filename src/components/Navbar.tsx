@@ -32,11 +32,8 @@ const Navbar = () => {
                     <img
                         src="/dulces_petalos_logo.jpg"
                         alt="Dulces Pétalos Logo"
-                        className="h-12 w-12 rounded-full object-cover border-2 border-wood"
+                        className="h-36 w-36 rounded-full object-cover"
                     />
-                    <span className="font-serif text-xl md:text-2xl font-bold text-wood tracking-wide">
-                        Dulces Pétalos SF
-                    </span>
                 </Link>
 
                 {/* Desktop Menu */}
