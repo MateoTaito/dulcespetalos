@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Calendar } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const location = useLocation();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -14,10 +16,10 @@ const Navbar = () => {
     }, []);
 
     const navLinks = [
-        { name: 'Inicio', href: '#' },
-        { name: 'Historia', href: '#historia' },
-        { name: 'Galería', href: '#galeria' },
-        { name: 'Contacto', href: '#contacto' },
+        { name: 'Inicio', href: '/#' },
+        { name: 'Historia', href: '/#historia' },
+        { name: 'Galería', href: '/#galeria' },
+        { name: 'Contacto', href: '/#contacto' },
     ];
 
     return (
@@ -26,7 +28,7 @@ const Navbar = () => {
                 }`}
         >
             <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
-                <div className="flex items-center gap-3">
+                <Link to="/" className="flex items-center gap-3">
                     <img
                         src="/dulces_petalos_logo.jpg"
                         alt="Dulces Pétalos Logo"
@@ -35,10 +37,10 @@ const Navbar = () => {
                     <span className="font-serif text-xl md:text-2xl font-bold text-wood tracking-wide">
                         Dulces Pétalos SF
                     </span>
-                </div>
+                </Link>
 
                 {/* Desktop Menu */}
-                <div className="hidden md:flex gap-8">
+                <div className="hidden md:flex items-center gap-8">
                     {navLinks.map((link) => (
                         <a
                             key={link.name}
@@ -48,6 +50,17 @@ const Navbar = () => {
                             {link.name}
                         </a>
                     ))}
+
+                    <Link
+                        to="/calendario"
+                        className={`flex items-center gap-2 px-5 py-2 rounded-full font-medium transition-all duration-300 ${location.pathname === '/calendario'
+                            ? 'bg-terracotta text-white shadow-md'
+                            : 'border border-terracotta text-terracotta hover:bg-terracotta hover:text-white'
+                            }`}
+                    >
+                        <Calendar size={18} />
+                        <span>Agendar</span>
+                    </Link>
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -73,6 +86,14 @@ const Navbar = () => {
                             {link.name}
                         </a>
                     ))}
+                    <Link
+                        to="/calendario"
+                        className="flex items-center gap-2 text-terracotta font-bold text-lg mt-2"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        <Calendar size={20} />
+                        Agendar
+                    </Link>
                 </div>
             )}
         </nav>

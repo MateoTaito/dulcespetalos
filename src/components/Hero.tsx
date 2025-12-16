@@ -45,7 +45,7 @@ const Hero = () => {
                 {/* Image Content */}
                 <div className="relative h-[500px] md:h-[600px] w-full rounded-t-full rounded-b-[200px] overflow-hidden border-4 border-white shadow-2xl shadow-wood/20 transform hover:scale-[1.02] transition-transform duration-700 ease-in-out">
                     <img
-                        src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=1000&auto=format&fit=crop"
+                        src="prod_1.png"
                         alt="Pastel artesanal delicioso"
                         className="w-full h-full object-cover"
                     />

@@ -22,7 +22,7 @@ const Contact = () => {
                                 </div>
                                 <div>
                                     <h4 className="font-bold text-wood text-lg">Dirección</h4>
-                                    <p className="text-coffee/80">Calle Prat 123, San Felipe, Valparaíso</p>
+                                    <p className="text-coffee/80">Marta Haramboure 1580, San Felipe, Chile 2170000</p>
                                 </div>
                             </div>
 
@@ -49,7 +49,7 @@ const Contact = () => {
 
                         <div className="h-64 w-full rounded-2xl overflow-hidden shadow-lg border border-wood/10">
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3344.686608722676!2d-70.7285!3d-32.7505!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x968810a0a0a0a0a0%3A0x0!2sSan%20Felipe!5e0!3m2!1ses!2scl!4v1620000000000!5m2!1ses!2scl"
+                                src="https://maps.google.com/maps?q=Marta+Haramboure+1580,+San+Felipe,+Chile&t=&z=15&ie=UTF8&iwloc=&output=embed"
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}
