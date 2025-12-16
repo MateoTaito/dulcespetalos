@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #fefdf9;
+  --color-coffee: #473c36;
+  --color-wood: #6f4a20;
+  --color-terracotta: #a5462a;
+  --color-coral: #e57952;
+  --color-cookie: #d88a4a;
+
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Montserrat", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
