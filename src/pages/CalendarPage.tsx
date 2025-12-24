@@ -1,8 +1,70 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ClipboardList, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
+import OrderModal, { OrderDetails } from '../components/OrderModal';
 
 const CalendarPage = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleOrderConfirm = (details: OrderDetails) => {
+        if (!selectedDate) return;
+
+        const formattedDate = selectedDate.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+        let message = `Hola! Quiero agendar un pedido para el día ${formattedDate}.\n`;
+        message += `Categoría: ${details.category}`;
+
+        if (details.category === 'Torta') {
+            message += `\nTamaño: ${details.size}`;
+            message += `\nTipo: ${details.cakeType}`;
+            if (details.flavor) {
+                message += `\nSabor: ${details.flavor}`;
+            }
+        } else if (['Pie', 'Kuchen', 'Tiramisú'].includes(details.category)) {
+            if (details.size) message += `\nTamaño: ${details.size}`;
+            if (details.flavor) message += `\nSabor: ${details.flavor}`;
+        } else if (details.category === 'Cáterin') {
+            if (details.caterinType) message += `\nTipo: ${details.caterinType}`;
+        }
+
+        if (details.dedication) {
+            message += `\n\nDedicatoria: ${details.dedication}`;
+        }
+
+        if (details.edibleImage) {
+            message += `\n\n*Incluye imagen comestible (se enviará por este chat)*`;
+        }
+
+        message += `\n\n--- Datos de Entrega ---`;
+        message += `\nNombre de referencia: ${details.referenceName}`;
+        message += `\nMétodo: ${details.deliveryMethod === 'pickup' ? 'Retiro en local' : 'Delivery'}`;
+
+        if (details.deliveryMethod === 'pickup' && details.pickupTime) {
+            message += `\nHora de retiro: ${details.pickupTime}`;
+        } else if (details.deliveryMethod === 'delivery' && details.address) {
+            message += `\nDirección: ${details.address}`;
+            if (details.deliveryTimeWindow) {
+                message += `\nVentana Horaria: ${details.deliveryTimeWindow}`;
+            }
+        }
+
+        message += `\n\n--- Documento Tributario ---`;
+        message += `\nTipo: ${details.documentType === 'boleta' ? 'Boleta' : 'Factura'}`;
+
+        if (details.documentType === 'factura' && details.invoiceDetails) {
+            message += `\nRazón Social: ${details.invoiceDetails.businessName}`;
+            message += `\nRUT: ${details.invoiceDetails.rut}`;
+            message += `\nGiro: ${details.invoiceDetails.giro}`;
+            message += `\nDirección: ${details.invoiceDetails.address}`;
+            message += `\nEmail: ${details.invoiceDetails.email}`;
+        }
+
+        const encodedMessage = encodeURIComponent(message);
+        const phoneNumber = "+56981293237";
+
+        window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+        setIsModalOpen(false);
+    };
 
     const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
@@ -22,111 +84,112 @@ const CalendarPage = () => {
 
     const renderCalendarDays = () => {
         const days = [];
-        // Empty cells for days before the first day of the month
         for (let i = 0; i < firstDayOfMonth; i++) {
             days.push(<div key={`empty-${i}`} className="h-24 bg-cream/30 border border-wood/10"></div>);
         }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const minDate = new Date(today);
+        minDate.setDate(today.getDate() + 2);
 
-        // Days of the month
         for (let i = 1; i <= daysInMonth; i++) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
+            const isSelected = selectedDate?.toDateString() === date.toDateString();
+            const isSelectable = date >= minDate;
+
             days.push(
-                <div key={i} className="h-24 bg-white border border-wood/10 p-2 hover:bg-cream transition-colors cursor-pointer group relative">
-                    <span className="font-serif font-bold text-wood">{i}</span>
+                <div
+                    key={i}
+                    onClick={() => isSelectable && setSelectedDate(date)}
+                    className={`h-24 border border-wood/10 p-2 transition-all group relative ${!isSelectable
+                        ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                        : isSelected
+                            ? 'bg-terracotta text-white shadow-inner cursor-pointer'
+                            : 'bg-white hover:bg-cream cursor-pointer'
+                        }`}
+                >
+                    <span className={`font-serif font-bold ${isSelected ? 'text-white' : !isSelectable ? 'text-gray-300' : 'text-wood'}`}>{i}</span>
                     {/* Placeholder for events */}
-                    <div className="mt-2 hidden group-hover:block">
-                        <div className="text-xs text-terracotta bg-terracotta/10 p-1 rounded">Disponible</div>
-                    </div>
+                    {isSelectable && (
+                        <div className="mt-2 hidden group-hover:block">
+                            <div className={`text-xs p-1 rounded ${isSelected ? 'bg-white/20 text-white' : 'bg-terracotta/10 text-terracotta'}`}>
+                                Disponible
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         }
         return days;
     };
 
-    const rules = [
-        "Especificar tamaño",
-        "Especificar torta",
-        "Especificar fecha",
-        "Especificar destino",
-        "Especificar retiro o delivery (2000 clp) y dentro de SF (lugar de envío)",
-        "Agendar fecha mínimo 48 horas de anticipación",
-        "Especificar nombre",
-        "Especificar dónde es el retiro"
-    ];
+    const handleOrderClick = () => {
+        if (!selectedDate) return;
+        setIsModalOpen(true);
+    };
 
     return (
         <section className="pt-32 pb-24 min-h-screen bg-cream relative">
-            {/* Dot Grid Background */}
             <div className="absolute inset-0 bg-[radial-gradient(#6f4a20_3px,transparent_3px)] [background-size:45px_45px] opacity-[0.05] pointer-events-none" />
 
             <div className="container mx-auto px-4 md:px-8 relative z-10">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl md:text-5xl font-serif font-bold text-wood mb-4">Agendar Pedido</h2>
-                        <p className="text-coffee/80">Revisa nuestra disponibilidad y sigue los pasos para realizar tu pedido.</p>
+                        <p className="text-coffee/80">Revisa nuestra disponibilidad y selecciona una fecha para tu pedido.</p>
                     </div>
 
-                    <div className="grid lg:grid-cols-3 gap-8">
-                        {/* Calendar Section */}
-                        <div className="lg:col-span-2 bg-white rounded-3xl shadow-xl overflow-hidden border border-wood/10">
-                            {/* Calendar Header */}
-                            <div className="bg-wood p-6 flex justify-between items-center text-cream">
-                                <button onClick={prevMonth} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                                    <ChevronLeft size={24} />
-                                </button>
-                                <h3 className="text-2xl font-serif font-bold">
-                                    {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-                                </h3>
-                                <button onClick={nextMonth} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                                    <ChevronRight size={24} />
-                                </button>
-                            </div>
-
-                            {/* Days Header */}
-                            <div className="grid grid-cols-7 bg-cream/50 border-b border-wood/10">
-                                {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
-                                    <div key={day} className="py-4 text-center font-bold text-wood text-sm uppercase tracking-wider">
-                                        {day}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Calendar Grid */}
-                            <div className="grid grid-cols-7">
-                                {renderCalendarDays()}
-                            </div>
+                    <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-wood/10">
+                        <div className="bg-wood p-6 flex justify-between items-center text-cream">
+                            <button onClick={prevMonth} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                                <ChevronLeft size={24} />
+                            </button>
+                            <h3 className="text-2xl font-serif font-bold">
+                                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                            </h3>
+                            <button onClick={nextMonth} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                                <ChevronRight size={24} />
+                            </button>
                         </div>
-
-                        {/* Rules Section */}
-                        <div className="lg:col-span-1">
-                            <div className="bg-white rounded-3xl shadow-xl p-8 border border-wood/10 sticky top-32">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="bg-terracotta/10 p-3 rounded-full">
-                                        <ClipboardList className="text-terracotta" size={24} />
-                                    </div>
-                                    <h3 className="text-2xl font-serif font-bold text-wood">Reglas para Agendar</h3>
+                        <div className="grid grid-cols-7 bg-cream/50 border-b border-wood/10">
+                            {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day) => (
+                                <div key={day} className="py-4 text-center font-bold text-wood text-sm uppercase tracking-wider">
+                                    {day}
                                 </div>
-
-                                <div className="space-y-4">
-                                    {rules.map((rule, index) => (
-                                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-cream/50 transition-colors">
-                                            <CheckCircle2 className="text-terracotta shrink-0 mt-0.5" size={18} />
-                                            <p className="text-coffee/90 text-sm leading-relaxed">{rule}</p>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="mt-8 pt-6 border-t border-wood/10">
-                                    <p className="text-xs text-coffee/60 italic text-center">
-                                        * Todos los pedidos se coordinan directamente vía WhatsApp.
-                                    </p>
-                                </div>
-                            </div>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-7">
+                            {renderCalendarDays()}
+                        </div>
+                        <div className="p-8 bg-cream/20 border-t border-wood/10 flex flex-col items-center">
+                            <button
+                                onClick={handleOrderClick}
+                                disabled={!selectedDate}
+                                className={`w-full md:w-auto px-12 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all mb-4 ${selectedDate
+                                    ? 'bg-terracotta text-white hover:bg-coral shadow-lg hover:shadow-xl cursor-pointer transform hover:-translate-y-1'
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
+                            >
+                                <MessageCircle size={20} />
+                                {selectedDate ? 'Agendar Pedido' : 'Selecciona una fecha'}
+                            </button>
+                            <p className="text-xs text-coffee/60 italic text-center">
+                                * Todos los pedidos se coordinan directamente vía WhatsApp.
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <OrderModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleOrderConfirm}
+            />
         </section>
     );
 };
+
+
 
 export default CalendarPage;

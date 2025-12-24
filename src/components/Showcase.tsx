@@ -2,7 +2,7 @@ const Showcase = () => {
     const products = [
         {
             id: 1,
-            title: "Dulces Clásicos de Buffet",
+            title: "Dulces de cáterin",
             image: "prod_1.png",
         },
         {
